@@ -1,3 +1,4 @@
+#Importanto bibliotecas
 import re
 
 import ply.lex as lex
@@ -17,7 +18,7 @@ def AnalisadorLexico():
             'REP_ENQUANTO', 'TENTAR', 'CASO_ERRO', 'NOME_FUNCAO', 'DEFINE_FUNCAO', 'VALOR_LOGICO',
             'VALOR_TEXTO','VALOR_INTEIRO', 'VALOR_REAL', 'VALOR_DATA','VALOR_HORARIO',
             'ABRE_PARENT', 'FECHA_PARENT', 'ABRE_CHAVES', 'FECHA_CHAVES','ABRE_COMENTARIO',
-            'FECHA_COMENTARIO', 'PONTO_FINAL', 'VIRGULA', 'ESPACO')
+            'FECHA_COMENTARIO', 'PONTO_FINAL', 'VIRGULA')
 
     # REGEX DE CADA TOKEN
     t_IFSULDEMINAS = r'IFSULDEMINAS'
@@ -51,10 +52,9 @@ def AnalisadorLexico():
     t_FECHA_COMENTARIO = r'\]'
     t_PONTO_FINAL = r'\.'
     t_VIRGULA = r','
-    t_ESPACO = r'\s'
 
     # TOKENS que devem ser ignorados
-    t_ignore = '\t'
+    t_ignore = ' \t'
 
     def constroiTokenInvalido(token):
         global g_token_invalido
@@ -218,8 +218,7 @@ def exibir_tabela_tokens():
         ["abre_comentario","[","[","Identificador de abrir comentário."],
         ["fecha_comentario","]","]","Identificador de fechar comentario."],
         ["ponto_final",".","\.","Identificador de final de linha."],
-        ["virgula",",",",","Identificador de virgula no código"],
-        ["espaco"," ","\s","Identificador de espaço no código"]   
+        ["virgula",",",",","Identificador de virgula no código"],   
     ]
 
     layout = [[sg.Table(
@@ -255,9 +254,6 @@ def executar():
         
         if not token:
             break 
-
-        if token.type == "ESPACO":
-            continue
         
         elif token.type == "VALOR_INTEIRO" and len(token.value) > 20:
             print(f"Erro Léxico! - Linha:", token.lineno," - Coluna: ", token.lexpos," - Número excede o tamanho permitido (20 caracteres)! - Valor inserido:", token.value)      
@@ -275,7 +271,7 @@ def executar():
         print(f'Linha: {token.lineno} - Coluna: {token.lexpos} - Token: <{token.type},{token.value}>')
 
     if g_token_invalido != '':
-        print(verificaErroTokenInvalido(g_token_invalido),"Linha:", {token.lineno})
+        print('Erro Léxico! Última Linha!', verificaErroTokenInvalido(g_token_invalido))
         g_token_invalido = ''
 
     print("Processo de Análise Léxica Concluído com Sucesso")

@@ -1,0 +1,9 @@
+enquanto(VELOCIDADE <= 140 E ACELERADOR = Verdadeiro){
+	!acelerar(VELOCIDADE,1).
+}
+
+se(VELOCIDADE > 140){
+	enquanto(VELOCIDADE > 140){
+		!desacelerar(VELOCIDADE,2).
+	}
+}
