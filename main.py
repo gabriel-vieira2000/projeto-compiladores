@@ -271,7 +271,7 @@ def executar():
             g_token_invalido = ''
             continue
         
-        print(f'Linha: {token.lineno} - Coluna: {token.lexpos} - Token: <{token.type},{token.value.replace("\n","")}>')
+        print('Linha:',token.lineno, ' - Coluna:',token.lexpos,' - Token: <',token.type,',',token.value.replace("\n",""),'>')
 
     if g_token_invalido != '':
         print('Erro Léxico! Última Linha!', verificaErroTokenInvalido(g_token_invalido))
