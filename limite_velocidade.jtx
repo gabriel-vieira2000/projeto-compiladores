@@ -1,3 +1,4 @@
+IFSULDEMINAS.
 enquanto(VELOCIDADE <= 140 E ACELERADOR = Verdadeiro){
 	!acelerar(VELOCIDADE,1).
 }

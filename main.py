@@ -13,14 +13,16 @@ g_token_invalido = ""
 def AnalisadorLexico():
 
     #Lista de Tokens
-    tokens = ('IFSULDEMINAS','TIPO_VAR', 'VAR', 'VAR_SENSOR', 'OPER_RELA', 'OPER_MATEMATICO',
+    tokens = ('COMENTARIO', 'VALOR_TEXTO','IFSULDEMINAS','TIPO_VAR', 'VAR', 'VAR_SENSOR', 'OPER_RELA', 'OPER_MATEMATICO',
             'OPER_ATRIB','OPER_LOGICO', 'COND_SE', 'COND_SENAO', 'COND_SENAOSE', 'REP_PARA',
             'REP_ENQUANTO', 'TENTAR', 'CASO_ERRO', 'NOME_FUNCAO', 'DEFINE_FUNCAO', 'VALOR_LOGICO',
-            'VALOR_TEXTO','VALOR_INTEIRO', 'VALOR_REAL', 'VALOR_DATA','VALOR_HORARIO',
-            'ABRE_PARENT', 'FECHA_PARENT', 'ABRE_CHAVES', 'FECHA_CHAVES','ABRE_COMENTARIO',
-            'FECHA_COMENTARIO', 'PONTO_FINAL', 'VIRGULA')
+            'VALOR_INTEIRO', 'VALOR_REAL', 'VALOR_DATA','VALOR_HORARIO',
+            'ABRE_PARENT', 'FECHA_PARENT', 'ABRE_CHAVES', 'FECHA_CHAVES','PONTO_FINAL', 'VIRGULA',
+            'TEXTO_MAL_FORMADO')
 
     # REGEX DE CADA TOKEN
+    t_COMENTARIO = r'(\[[^"]*\])'
+    t_VALOR_TEXTO = r'("[^"]*")|(\'[^\']*\')'
     t_IFSULDEMINAS = r'IFSULDEMINAS'
     t_TIPO_VAR = r'~numero_inteiro | ~texto | ~porcentagem | ~temperatura | ~numero_real | ~booleano | ~lista | ~tempo | ~data'
     t_VAR = r'\#[A-z0-9\_]+'
@@ -39,7 +41,6 @@ def AnalisadorLexico():
     t_NOME_FUNCAO = r'!([a-zA-Z][a-zA-Z0-9]+)'
     t_DEFINE_FUNCAO = r'define_funcao'
     t_VALOR_LOGICO = r'Verdadeiro|Falso'
-    t_VALOR_TEXTO = r'"[a-zA-Z0-9áàâãéèêíïóôõöúçÁÀÂÃÉÈÍÏÓÔÕÖÚ\.\s\_,\?!@\#$%&\|\*\(\)]*"'
     t_VALOR_INTEIRO = r'\b(\d+)\b'
     t_VALOR_REAL = r'(\d+)\.(\d+)'
     t_VALOR_DATA = r'[0-3][0-9]\/[0-1][0-9]\/[0-9][0-9][0-9][0-9]'
@@ -48,10 +49,9 @@ def AnalisadorLexico():
     t_FECHA_PARENT = r'\)'
     t_ABRE_CHAVES = r'\{'
     t_FECHA_CHAVES = r'\}'
-    t_ABRE_COMENTARIO = r'\['
-    t_FECHA_COMENTARIO = r'\]'
     t_PONTO_FINAL = r'\.'
     t_VIRGULA = r','
+    t_TEXTO_MAL_FORMADO = r'("[^"]*)|(\'[^\']*)'
 
     # TOKENS que devem ser ignorados
     t_ignore = ' \t'
@@ -75,15 +75,11 @@ def AnalisadorLexico():
 # Função para Tratar Tokens Inválidos
 ###-------#####
 def verificaErroTokenInvalido(token_invalido):
-    if g_token_invalido != '':
-        if (g_token_invalido[0] == '"' and g_token_invalido[-1] != '"') or (g_token_invalido[0] != '"' and g_token_invalido[-1] == '"'):
-            return (f"String mal formada - Token: {g_token_invalido}")
+    if g_token_invalido[0] in ('1','2','3','4','5','6','7','8','9'):
+        return (f"Número não identificado! Token: {g_token_invalido}")
 
-        elif g_token_invalido[0] in ('1','2','3','4','5','6','7','8','9'):
-            return (f"Número não identificado! Token: {g_token_invalido}")
-
-        else:
-            return (f"Caractere ou sequência de caracteres não reconhecido(s) na linguagem: {g_token_invalido}")
+    else:
+        return (f"Caractere ou sequência de caracteres não reconhecido(s) na linguagem: {g_token_invalido}")
 
 
 ###-------#####
@@ -206,7 +202,7 @@ def exibir_tabela_tokens():
         ["nome_funcao","!exibeMensagemPainel, !trocaMarcha, !acelera, !desacelera, etc.","!([a-zA-Z][a-zA-Z0-9]+)","Declaração ou invocação de funções permitida na linguagem."],
         ["define_funcao","define_funcao","define_funcao","alavra reservada para a criação de funções dentro da linguagem."],
         ["valor_logico","Verdadeiro,Falso","Verdadeiro|Falso","Valor booleano de falsidade ou negativo ou vazio a ser exibido, processado ou armazenado em uma variável do tipo ~booleano."],
-        ["valor_texto",'“Olá”, “Seu nome”, “Nome do Carro”, “Placa do Carro”, etc.','"[a-zA-Z0-9áàâãéèêíïóôõöúçÁÀ ÃÉÈÍÏÓÔÕÖÚ\.\s\_,\?!@\#$%&\|\*\(\)]*"',"Valor de qualquer texto a ser exibido, processado ou armazenado em uma variável do tipo ~texto."],
+        ["valor_texto",'“Olá”, “Seu nome”, “Nome do Carro”, “Placa do Carro”, etc.','(\"[^\"]*")|(\\\'[^\\\']*\\\')',"Valor de qualquer texto a ser exibido, processado ou armazenado em uma variável do tipo ~texto."],
         ["valor_inteiro","10, 1, 0, -3, 1239123, etc.","\b(\d+)\b","Valor de qualquer número inteiro a ser exibido, processado ou armazenado em uma variável do tipo ~numero_inteiro."],
         ["valor_real","0.5,0.674","(\d+)\.(\d+)","Valor de qualquer número real a ser exibido, processado ou armazenado em uma variável do tipo ~numero_real."],
         ["valor_data","20/10/2010, etc","[0-3][0-9]\/[0-1][0-9]\/[0-9][0-9][0-9][0-9]","Valor de qualquer número real a ser exibido, processado ou armazenado em uma variável do tipo ~data."],
@@ -215,8 +211,7 @@ def exibir_tabela_tokens():
         ["fecha_parent",")","\)","Identificador de fechar parênteses."],
         ["abre_chaves","{","\{","Identificador de abrir de chaves."],
         ["fecha_chaves","}","\}","Identificador de fechar de chaves."],
-        ["abre_comentario","[","[","Identificador de abrir comentário."],
-        ["fecha_comentario","]","]","Identificador de fechar comentario."],
+        ["comentario","[qualquer caracter]",'(\"[^\"]*\")|(\\\'[^\\\']*\\\')',"Identificador de abrir comentário."],
         ["ponto_final",".","\.","Identificador de final de linha."],
         ["virgula",",",",","Identificador de virgula no código"],   
     ]
@@ -254,6 +249,10 @@ def executar():
         
         if not token:
             break 
+
+        elif token.type == "COMENTARIO":
+            print("Comentário de Código Ignorado! - Linha: ",token.lineno," - ", token.value.replace("\n",""))
+            continue
         
         elif token.type == "VALOR_INTEIRO" and len(token.value) > 20:
             print(f"Erro Léxico! - Linha:", token.lineno," - Coluna: ", token.lexpos," - Número excede o tamanho permitido (20 caracteres)! - Valor inserido:", token.value)      
@@ -263,12 +262,16 @@ def executar():
             print("Erro Léxico! - Linha:", token.lineno, " - Coluna:", token.lexpos, " - Nome da Variável excede o tamanho máximo permitido (20 caracteres)! - Valor inserido:", token.value)      
             continue
 
+        elif token.type == "TEXTO_MAL_FORMADO":
+            print("Erro Léxico! - Linha:", token.lineno, " - Texto Mal Formado: ", token.value.replace("\n",""))
+            continue
+
         elif g_token_invalido != '':
             print('Erro Léxico! - Linha:', token.lineno, ' - Coluna: ', token.lexpos,' - ',verificaErroTokenInvalido(g_token_invalido))
             g_token_invalido = ''
             continue
         
-        print(f'Linha: {token.lineno} - Coluna: {token.lexpos} - Token: <{token.type},{token.value}>')
+        print(f'Linha: {token.lineno} - Coluna: {token.lexpos} - Token: <{token.type},{token.value.replace("\n","")}>')
 
     if g_token_invalido != '':
         print('Erro Léxico! Última Linha!', verificaErroTokenInvalido(g_token_invalido))
@@ -301,4 +304,3 @@ while True:
         executar()
     if event == "Limpar":
         window["_SAIDA_"].update('')    
-

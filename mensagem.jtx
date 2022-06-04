@@ -1,3 +1,4 @@
+IFSULDEMINAS.
 ~porcentagem #tanque := NIVEL_TANQUE.
 se(#tanque < 10){
  	!exibeMensagemPainel("Combustível Acabando! Reabasteça!").

@@ -1,5 +1,6 @@
+IFSULDEMINAS.
 ~texto #nome_condutor.
-#nome_condutor := !entradaDadosPainel(“Por Favor, insira o seu nome:").
+#nome_condutor := !entradaDadosPainel("Por Favor, insira o seu nome:").
 se (HORA_ATUAL >= 06:00 E HORA_ATUAL<= 12:59) {
  	!exibeMensagemPainel("Olá, ", #nome_condutor, ", tenha um bom dia!").
 } senao se ( HORA_ATUAL >= 13:00 E HORA_ATUAL <= 17:59) {
