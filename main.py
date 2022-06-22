@@ -20,13 +20,13 @@ tokens = ('COMENTARIO', 'VALOR_TEXTO','IFSULDEMINAS','TIPO_VAR', 'VAR', 'VAR_SEN
 t_COMENTARIO = r'(\[[^"]*\])'
 t_VALOR_TEXTO = r'("[^"]*")|(\'[^\']*\')'
 t_IFSULDEMINAS = r'IFSULDEMINAS'
-t_TIPO_VAR = r'~numero_inteiro | ~texto | ~porcentagem | ~temperatura | ~numero_real | ~booleano | ~lista | ~tempo | ~data'
+t_TIPO_VAR = r'~numero_inteiro | ~texto | ~numero_real | ~booleano | ~tempo | ~data'
 t_VAR = r'\#[A-z0-9\_]+'
 t_VAR_SENSOR = r'VELOCIDADE | NIVEL_TANQUE | MARCHA | TEMPERATURA | DISTANCIA_TRAS | DISTANCIA_FRENTE | POSICAO_VIDROS | VIDA_UTIL_PNEUS | ACELERADOR | FREIO | EMBREAGEM | DATA_ATUAL | HORA_ATUAL | POSICAO_DIRECAO'
 t_OPER_RELA = r'<= | >= | < | > |  = | !='
 t_OPER_MATEMATICO = r'\+|-|\/|\*'
 t_OPER_ATRIB = r':='
-t_OPER_LOGICO = r'E|OU'
+t_OPER_LOGICO = r'\bE\b|\bOU\b'
 t_COND_SE = r'se'
 t_COND_SENAO = r'senao'
 t_COND_SENAOSE = r'senaose'
@@ -117,6 +117,8 @@ def p_expressao_numero(p):
 def p_expressao_variavel(p):
     '''
     expr : VAR
+         | VAR_SENSOR
+         | funcao
     '''
 
 def p_expressao_operacao(p):
@@ -139,6 +141,9 @@ def p_criacaoVariavel(p):
             | TIPO_VAR VAR OPER_ATRIB VALOR_TEXTO PONTO_FINAL
             | TIPO_VAR VAR OPER_ATRIB VAR PONTO_FINAL
             | TIPO_VAR VAR OPER_ATRIB VAR_SENSOR PONTO_FINAL
+            | TIPO_VAR VAR OPER_ATRIB VALOR_DATA PONTO_FINAL
+            | TIPO_VAR VAR OPER_ATRIB VALOR_HORARIO PONTO_FINAL
+            | TIPO_VAR VAR OPER_ATRIB funcao PONTO_FINAL
     '''
 
 def p_atribuicaoValorVariavel(p):
@@ -146,6 +151,10 @@ def p_atribuicaoValorVariavel(p):
     statement : VAR OPER_ATRIB expr PONTO_FINAL
             | VAR OPER_ATRIB VALOR_TEXTO PONTO_FINAL
             | VAR OPER_ATRIB VAR PONTO_FINAL
+            | VAR OPER_ATRIB VAR_SENSOR PONTO_FINAL
+            | VAR OPER_ATRIB VALOR_DATA PONTO_FINAL
+            | VAR OPER_ATRIB VALOR_HORARIO PONTO_FINAL
+            | VAR OPER_ATRIB funcao PONTO_FINAL
     '''
 
 ###-------#####
@@ -156,16 +165,16 @@ def p_parametro_vazio(p):
     param_vazio : 
     '''
 
-def p_parametro_valor(p):
+def p_parametro(p):
     '''
     param : VALOR_INTEIRO
         | VALOR_REAL
         | VALOR_TEXTO
-    '''
-
-def p_parametro_variavel(p):
-    '''
-    param : VAR
+        | VALOR_LOGICO
+        | VALOR_DATA
+        | VALOR_HORARIO
+        | VAR
+        | VAR_SENSOR
     '''
 
 def p_parametro_grupo(p):
@@ -200,6 +209,24 @@ def p_parametro_condicional(p):
             | VAR OPER_RELA VAR
             | VAR OPER_RELA VALOR_LOGICO
             | VAR OPER_RELA VAR_SENSOR
+            | VAR OPER_RELA VALOR_DATA
+            | VAR OPER_RELA VALOR_HORARIO
+            | VAR_SENSOR OPER_RELA VALOR_INTEIRO
+            | VAR_SENSOR OPER_RELA VALOR_REAL
+            | VAR_SENSOR OPER_RELA VALOR_TEXTO
+            | VAR_SENSOR OPER_RELA VAR
+            | VAR_SENSOR OPER_RELA VALOR_LOGICO
+            | VAR_SENSOR OPER_RELA VAR_SENSOR
+            | VAR_SENSOR OPER_RELA VALOR_DATA
+            | VAR_SENSOR OPER_RELA VALOR_HORARIO
+            | VALOR_INTEIRO OPER_RELA VAR
+            | VALOR_INTEIRO OPER_RELA VAR_SENSOR
+            | VALOR_INTEIRO OPER_RELA VALOR_INTEIRO
+            | VALOR_REAL OPER_RELA VAR
+            | VALOR_REAL OPER_RELA VAR_SENSOR
+            | VALOR_REAL OPER_RELA VALOR_REAL
+            | VALOR_DATA OPER_RELA VALOR_DATA
+            | VALOR_HORARIO OPER_RELA VALOR_HORARIO
     '''
 
 def p_parametros_condicionais_grupo(p):
@@ -233,7 +260,7 @@ def p_regra_para(p):
     statement : REP_PARA ABRE_PARENT VAR OPER_ATRIB VALOR_INTEIRO VIRGULA cond_param VIRGULA VAR OPER_ATRIB VAR OPER_MATEMATICO VALOR_INTEIRO  FECHA_PARENT ABRE_CHAVES statements FECHA_CHAVES
             | REP_PARA ABRE_PARENT VAR OPER_ATRIB VAR VIRGULA cond_param VIRGULA VAR OPER_ATRIB VAR OPER_MATEMATICO VALOR_INTEIRO  FECHA_PARENT ABRE_CHAVES statements FECHA_CHAVES
             | REP_PARA ABRE_PARENT VAR OPER_ATRIB VAR_SENSOR cond_param VIRGULA VAR OPER_ATRIB VAR OPER_MATEMATICO VALOR_INTEIRO  FECHA_PARENT ABRE_CHAVES statements FECHA_CHAVES
-            | REP_PARA ABRE_PARENT VAR cond_param VIRGULA VAR OPER_ATRIB VAR OPER_MATEMATICO VALOR_INTEIRO  FECHA_PARENT ABRE_CHAVES statements FECHA_CHAVES
+            | REP_PARA ABRE_PARENT VAR VIRGULA cond_param VIRGULA VAR OPER_ATRIB VAR OPER_MATEMATICO VALOR_INTEIRO  FECHA_PARENT ABRE_CHAVES statements FECHA_CHAVES
     '''
 
 def p_regra_enquanto(p):
@@ -355,16 +382,16 @@ def exibir_tabela_tokens():
     cabecalho_tabela = ["NOME_TOKEN", "LEXEMA", "EXPRESSÃO REGULAR", "DESCRIÇÃO"]
     tokens_registrados = [
         ["IFSULDEMINAS", "IFSULDEMINAS", "IFSULDEMINAS", "Palavra reservada IFSULDEMINAS."],
-        ["tipo_var", "~numero_inteiro, ~texto, ~porcentagem, ~temperatura, ~numero_real, ~booleano, ~lista, ~tempo, ~data", "~numero_inteiro | ~texto | ~porcentagem | ~temperatura | ~numero_real | ~booleano | ~lista | ~tempo | ~data", "Tipos de variáveis que a linguagem poderá aceitar."],
+        ["tipo_var", "~numero_inteiro, ~texto, ~numero_real, ~booleano, ~tempo, ~data", "~numero_inteiro | ~texto | ~numero_real | ~booleano | ~tempo | ~data", "Tipos de variáveis que a linguagem poderá aceitar."],
         ["var", "#velocidade_anterior, #nome_condutor, #marcha2, etc.","\#[A-z0-9\_]+","Variável quando declarada ou invocada."],
         ["var_sensor", "NIVEL_TANQUE, MARCHA, TEMPERATURA, VELOCIDADE, DISTANCIA_TRAS, DISTANCIA_FRENTE, POSICAO_VIDROS, VIDA_UTIL_PNEUS, ACELERADOR, FREIO, EMBREAGEM, DATA_ATUAL e HORA_ATUAL, POSICAO_DIRECAO", "VELOCIDADE | NIVEL_TANQUE | MARCHA | TEMPERATURA | DISTANCIA_TRAS | DISTANCIA_FRENTE | POSICAO_VIDROS | VIDA_UTIL_PNEUS | ACELERADOR | FREIO | EMBREAGEM | DATA_ATUAL | HORA_ATUAL | POSICAO_DIRECAO", "Palavras reservadas que conterão valores lidos nos sensores do carro."],
         ["oper_rela", "<, >, <=, >=, =, !=", "<= | >= | < | > |  = | !=", "Operadores que permitem a comparação e relação entre variáveis."],
         ["oper_matematico", '+, -, /, *', '\+|-|\/|\*', "Operadores para realizar cálculos matemáticos."],
         ["oper_atrib", ":=", ":=", "Operadores que permitem a atribuição de um valor a uma variável ou de uma variável a outra."],
-        ["oper_logico", "E, OU", "E|OU", "Operadores lógicos para concatenar comparações."],
+        ["oper_logico", "E, OU", "\ bE'\ b|\ bOU\ b", "Operadores lógicos para concatenar comparações."],
         ["cond_se","se","se","Palavra reservada se para estrutura condicional: se."],
         ["cond_senao", "senao", "senao", "Palavra reservada para estrutura condicional: senao."],
-        ["cond_senaose", "cond_senaose", "cond_senaose", "Palavra reservada para estrutura condicional: senaose."],
+        ["cond_senaose", "senaose", "senaose", "Palavra reservada para estrutura condicional: senaose."],
         ["rep_para","para","para","Palavra reservada para estrutura de repetição: para."],
         ["rep_enquanto", "enquanto", "enquanto", "Palavra reservada para estrutura de repetição: enquanto."],
         ["tentar","tentar","tentar","Palavra reservada para tratamento de erros: tentar."],
@@ -413,6 +440,7 @@ def executar():
     print("ANÁLISE LÉXICA: ")
     analisadorLexico = AnalisadorLexico()
     analisadorLexico.input(values.get("_ENTRADA_"))
+    listaTokens = []
 
     #while True:
         #token = analisadorLexico.token()
@@ -442,6 +470,7 @@ def executar():
             continue
         
         print('Linha:',token.lineno, ' - Coluna:',token.lexpos,' - Token: <',token.type,',',token.value.replace("\n",""),'>')
+        listaTokens.append([token.lineno,token.lexpos,token.type,token.value])
 
     if g_token_invalido != '':
         print('Erro Léxico! Última Linha!', verificaErroTokenInvalido(g_token_invalido))
@@ -453,8 +482,11 @@ def executar():
     lexer = lex()
     parser = yacc()
     parser.parse(values.get("_ENTRADA_"))
-    if retornaQuantErros() == 0:
-        print("Compilação Sem Erros!!!")
+    if listaTokens:
+        if listaTokens[0][3] != 'IFSULDEMINAS':
+            print("Erro Sintático! Código não iniciado com IFSULDEMINAS.")
+        elif retornaQuantErros() == 0:
+            print("Compilação Sem Erros!!!")
     print("Processo de Análise Sintática Concluído com Sucesso")
 
 ###-------#####
